@@ -39,6 +39,7 @@ class MainWindow(QMainWindow):
         self.tool_bar_layout = QHBoxLayout()
 
         self.search_bar = QLineEdit()
+        self.search_bar.setPlaceholderText("Search Contacts")
         self.search_bar.textChanged.connect(self.searchContacts)
 
         self.add_partners_button = QPushButton("Add New Partners")
