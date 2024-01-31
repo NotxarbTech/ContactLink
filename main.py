@@ -78,7 +78,7 @@ class MainWindow(QMainWindow):
         cur.execute("SELECT * FROM partners;")
         for partner in cur:
             self.partner_list.append(PartnerContactWidget(partner[1], partner[2],
-                                                          partner[3], partner[4]))
+                                                          partner[3], partner[4], partner[0], self))
 
         # Clear the partner layout
         for i in reversed(range(self.partner_layout.count())):
