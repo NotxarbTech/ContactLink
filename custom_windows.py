@@ -1,4 +1,5 @@
-from PyQt6.QtWidgets import (QDialog, QLabel, QLineEdit, QVBoxLayout, QPushButton, QFileDialog, QMessageBox)
+from PyQt6.QtWidgets import (QDialog, QLabel, QLineEdit, QVBoxLayout, QPushButton, QFileDialog, QMessageBox,
+                             QPlainTextEdit, QHBoxLayout, QCheckBox, QButtonGroup)
 import sqlite3
 import pandas as pd
 
@@ -12,6 +13,7 @@ class AddPartnersWindow(QDialog):
 
         # Set up the main layout for the Add Partners window
         self.setWindowTitle("Add New Partners")
+        self.setGeometry(800, 200, 400, 300)
         self.main_layout = QVBoxLayout()
 
         # Create labels and input fields for partner information
@@ -29,6 +31,9 @@ class AddPartnersWindow(QDialog):
 
         self.org_label = QLabel("Organization")
         self.org_input = QLineEdit()
+
+        self.address_label = QLabel("Address")
+        self.address_input = QLineEdit()
 
         # Create a button to add the partner
         self.add_button = QPushButton("Add Partner")
@@ -49,6 +54,8 @@ class AddPartnersWindow(QDialog):
         self.main_layout.addWidget(self.phone_input)
         self.main_layout.addWidget(self.org_label)
         self.main_layout.addWidget(self.org_input)
+        self.main_layout.addWidget(self.address_label)
+        self.main_layout.addWidget(self.address_input)
         self.main_layout.addWidget(self.add_button)
         self.main_layout.addWidget(self.import_button)
 
@@ -63,11 +70,20 @@ class AddPartnersWindow(QDialog):
             email = self.email_input.text().strip()
             phone = self.phone_input.text().strip()
             org = self.org_input.text().strip()
+            address = self.address_input.text().strip()
+
+            # Makes sure none of the input fields are blank
+            input_fields = [first_name, last_name, email, phone, org, address]
+            for field in input_fields:
+                if field == "":
+                    QMessageBox.warning(self, "Blank Fields", "You cannot leave any fields blank!")
+                    return
 
             # Add the partner to the database or perform other necessary actions
-            insert_data = (f"{first_name} {last_name}", email, phone, org)
+            insert_data = (f"{first_name} {last_name}", email, phone, org, address)
 
-            cur.execute("INSERT INTO partners (name, phone, email, org) VALUES (?, ?, ?, ?);", insert_data)
+            cur.execute("INSERT INTO partners (name, phone, email, org, address) VALUES (?, ?, ?, ?, ?);",
+                        insert_data)
             con.commit()
 
             # Close the window
@@ -87,12 +103,14 @@ class AddPartnersWindow(QDialog):
                 emails = contacts_data["Email"]
                 phones = contacts_data["Phone"]
                 orgs = contacts_data["Organization"]
+                address = contacts_data["Address"]
 
                 # Loop through all the rows and add them to the database
-                for name, email, phone, org in zip(names, emails, phones, orgs):
-                    insert_data = (name, email, phone, org)
+                for name, email, phone, org in zip(names, emails, phones, orgs, address):
+                    insert_data = (name, email, phone, org, address)
 
-                    cur.execute("INSERT INTO partners (name, phone, email, org) VALUES (?, ?, ?, ?);", insert_data)
+                    cur.execute("INSERT INTO partners (name, phone, email, org, address) VALUES (?, ?, ?, ?, ?);",
+                                insert_data)
                     con.commit()
 
                 # Close the window
@@ -101,7 +119,8 @@ class AddPartnersWindow(QDialog):
                 QMessageBox.warning(self, "Error", "File Not Found.")
             except KeyError:
                 QMessageBox.warning(self, "Error",
-                                    "You do not have the proper column names (Name, Email, Phone, Organization)")
+                                    "You do not have the proper column names (Name, Email, Phone, Organization,"
+                                    " Mailing Address)")
 
 
 class EditPartnersWindow(QDialog):
@@ -114,6 +133,7 @@ class EditPartnersWindow(QDialog):
 
         # Set up the main layout for the Edit Partners window
         self.setWindowTitle("Edit Partners")
+        self.setGeometry(800, 200, 400, 300)
         self.main_layout = QVBoxLayout()
 
         # Create labels and input fields for partner information (already display the existing info)
@@ -132,6 +152,10 @@ class EditPartnersWindow(QDialog):
         self.org_label = QLabel("Organization")
         self.org_input = QLineEdit()
         self.org_input.setText(self.partner_info[4])
+
+        self.org_label = QLabel("Mailing Address")
+        self.org_input = QLineEdit()
+        self.org_input.setText(self.partner_info[5])
 
         # Create a button to save the changes
         self.add_button = QPushButton("Save Changes")
@@ -171,3 +195,90 @@ class EditPartnersWindow(QDialog):
             self.accept()
         except Exception as e:
             print(e)
+
+
+class EditPartnerNotesWindow(QDialog):
+    def __init__(self, partner_id, partner_name):
+        super(EditPartnerNotesWindow, self).__init__()
+
+        self.id = partner_id
+        self.name = partner_name
+
+        # Retrieve the partner's notes from the database
+        self.notes = cur.execute("SELECT notes FROM partners WHERE id = ?", str(self.id)).fetchone()
+
+        # Set up the window
+        self.setWindowTitle(f"Edit {self.name}'s Notes")
+        self.setGeometry(800, 200, 400, 300)
+
+        self.main_layout = QVBoxLayout()
+
+        self.save_button = QPushButton("Save")
+        self.save_button.clicked.connect(self.saveNotes)
+        self.clear_button = QPushButton("Clear")
+        self.clear_button.clicked.connect(self.clearNotes)
+
+        # Set up a text box already populated with the partner's notes
+        self.text_box = QPlainTextEdit()
+        self.text_box.setPlainText(self.notes[0])
+
+        # Toolbar with save and clear buttons
+        self.toolbar_layout = QHBoxLayout()
+        self.toolbar_layout.addWidget(self.save_button)
+        self.toolbar_layout.addWidget(self.clear_button)
+
+        self.main_layout.addWidget(self.text_box)
+        self.main_layout.addLayout(self.toolbar_layout)
+        self.setLayout(self.main_layout)
+
+    def saveNotes(self):
+        # SQL command to save the notes into the database
+        cur.execute("UPDATE partners SET notes = ? WHERE id = ?", (self.text_box.toPlainText(), self.id))
+        con.commit()
+
+    def clearNotes(self):
+        # Clears the text box
+        self.text_box.setPlainText(None)
+
+
+class FilterSearchWindow(QDialog):
+    def __init__(self, filter_name, filter_org, main_window):
+        super(FilterSearchWindow, self).__init__()
+
+        # Set up the window
+        self.setWindowTitle("Filter Search Results")
+        self.setGeometry(900, 300, 200, 100)
+        self.main_layout = QVBoxLayout()
+        self.main_window = main_window
+
+        # Checkboxes for different filter options
+        self.name_checkbox = QCheckBox("Name")
+        self.org_checkbox = QCheckBox("Organization")
+
+        if filter_name:
+            self.name_checkbox.setChecked(True)
+        elif filter_org:
+            self.org_checkbox.setChecked(True)
+
+        # Button group to contain the checkboxes
+        self.filter_button_group = QButtonGroup()
+        self.filter_button_group.addButton(self.name_checkbox)
+        self.filter_button_group.addButton(self.org_checkbox)
+        self.filter_button_group.setExclusive(True)
+
+        # Detect change and update variables in the main window
+        self.name_checkbox.stateChanged.connect(lambda: self.filterStateChanged(True, False))
+        self.org_checkbox.stateChanged.connect(lambda: self.filterStateChanged(False, True))
+
+        self.main_layout.addWidget(self.name_checkbox)
+        self.main_layout.addWidget(self.org_checkbox)
+
+        self.setLayout(self.main_layout)
+
+    def filterStateChanged(self, filter_name, filter_org):
+        if filter_name:
+            self.main_window.filter_name = True
+            self.main_window.filter_org = False
+        if filter_org:
+            self.main_window.filter_name = False
+            self.main_window.filter_org = True

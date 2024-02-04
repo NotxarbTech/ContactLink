@@ -5,10 +5,11 @@ from PyQt6.QtWidgets import (
     QLineEdit, QSpacerItem, QSizePolicy,
     QHBoxLayout, QPushButton
 )
+
 import sqlite3
 
 from custom_widgets import PartnerContactWidget
-from custom_windows import AddPartnersWindow
+from custom_windows import AddPartnersWindow, FilterSearchWindow
 
 # Connection and cursor to access and modify and read from the database
 con = sqlite3.connect("database.db")
@@ -19,7 +20,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
 
-        self.setWindowTitle("ContactLink (FBLA 2024) - by Braxton Hudgins")
+        self.setWindowTitle("Aggie CTE Partners (FBLA 2024) - by Braxton Hudgins")
         self.main_layout = QVBoxLayout()
         self.central_widget = QWidget()
 
@@ -28,8 +29,12 @@ class MainWindow(QMainWindow):
         self.partner_layout = QVBoxLayout()
         self.loadPartners()
 
+        # Filter variables
+        self.filter_name = True
+        self.filter_org = False
+
         # Header widget containing the application title
-        self.title_widget = QLabel("ContactLink")
+        self.title_widget = QLabel("Aggie CTE Partners")
         title_widget_font = self.title_widget.font()
         title_widget_font.setPointSize(30)
         self.title_widget.setFont(title_widget_font)
@@ -43,12 +48,15 @@ class MainWindow(QMainWindow):
         self.search_bar.textChanged.connect(self.searchContacts)
 
         self.add_partners_button = QPushButton("Add New Partners")
+        self.filter_search_button = QPushButton("Filter")
 
         self.tool_bar_layout.addWidget(self.search_bar)
+        self.tool_bar_layout.addWidget(self.filter_search_button)
         self.tool_bar_layout.addWidget(self.add_partners_button)
 
-        # Handle "Add New Partners" button click
+        # Handle "Add New Partners" and "Filter" button click
         self.add_partners_button.clicked.connect(self.addNewPartners)
+        self.filter_search_button.clicked.connect(self.filterSearch)
 
         # Scroll area that displays partner information
         self.scroll_area = QScrollArea()
@@ -78,7 +86,7 @@ class MainWindow(QMainWindow):
         cur.execute("SELECT * FROM partners;")
         for partner in cur:
             self.partner_list.append(PartnerContactWidget(partner[1], partner[2],
-                                                          partner[3], partner[4], partner[0], self))
+                                                          partner[3], partner[4], partner[5], partner[0], self))
 
         # Clear the partner layout
         for i in reversed(range(self.partner_layout.count())):
@@ -101,24 +109,38 @@ class MainWindow(QMainWindow):
     def searchContacts(self, text):
         visible_widgets = []
         for widget in self.partner_list:
-            if widget.matchSearchText(text):
-                widget.setVisible(True)
-                visible_widgets.append(widget)
-            else:
-                widget.setVisible(False)
+            if self.filter_name:
+                if widget.matchSearchText(widget.name, text):
+                    widget.setVisible(True)
+                    visible_widgets.append(widget)
+                else:
+                    widget.setVisible(False)
+            elif self.filter_org:
+                if widget.matchSearchText(widget.org, text):
+                    widget.setVisible(True)
+                    visible_widgets.append(widget)
+                else:
+                    widget.setVisible(False)
 
         # Removes all visible widgets and reinserts them at the top
         for widget in reversed(visible_widgets):
             self.partner_layout.removeWidget(widget)
             self.partner_layout.insertWidget(0, widget)
 
+    def filterSearch(self):
+        dialog_window = FilterSearchWindow(self.filter_name, self.filter_org, self)
+        dialog_window.exec()
+
 
 # Create application and main window
 app = QApplication([])
 window = MainWindow()
-window.show()
+
+# Change the app styling
+app.setStyle("Fusion")
 
 # Run the application
+window.show()
 app.exec()
 
 # Close the database objects
