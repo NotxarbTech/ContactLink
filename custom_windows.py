@@ -1,5 +1,8 @@
-from PyQt6.QtWidgets import (QDialog, QLabel, QLineEdit, QVBoxLayout, QPushButton, QFileDialog, QMessageBox,
-                             QPlainTextEdit, QHBoxLayout, QCheckBox, QButtonGroup)
+from PyQt6.QtGui import QIcon
+from PyQt6.QtWidgets import (QDialog, QLabel, QLineEdit,
+                             QVBoxLayout, QPushButton, QFileDialog,
+                             QMessageBox, QPlainTextEdit, QHBoxLayout,
+                             QCheckBox, QButtonGroup)
 import sqlite3
 import pandas as pd
 
@@ -13,6 +16,7 @@ class AddPartnersWindow(QDialog):
 
         # Set up the main layout for the Add Partners window
         self.setWindowTitle("Add New Partners")
+        self.setWindowIcon(QIcon("resources/favicon.jpg"))
         self.setGeometry(800, 200, 400, 300)
         self.main_layout = QVBoxLayout()
 
@@ -35,9 +39,17 @@ class AddPartnersWindow(QDialog):
         self.address_label = QLabel("Address")
         self.address_input = QLineEdit()
 
+        self.profile_pic_label = QLabel("Profile Picture (Optional)")
+        self.profile_pic_input = QPushButton("Browse")
+
+        # Add the profile picture if one is entered
+        self.profile_picture_data = None
+        self.profile_pic_input.clicked.connect(self.addProfilePicture)
+
         # Create a button to add the partner
         self.add_button = QPushButton("Add Partner")
         self.add_button.clicked.connect(self.addPartner)
+        self.add_button.setDefault(True)
 
         # Create a button to add partners from csv (spreadsheet)
         self.import_button = QPushButton("Import from Spreadsheet")
@@ -46,16 +58,25 @@ class AddPartnersWindow(QDialog):
         # Add widgets to the main layout
         self.main_layout.addWidget(self.first_name_label)
         self.main_layout.addWidget(self.first_name_input)
+
         self.main_layout.addWidget(self.last_name_label)
         self.main_layout.addWidget(self.last_name_input)
+
+        self.main_layout.addWidget(self.profile_pic_label)
+        self.main_layout.addWidget(self.profile_pic_input)
+
         self.main_layout.addWidget(self.email_label)
         self.main_layout.addWidget(self.email_input)
+
         self.main_layout.addWidget(self.phone_label)
         self.main_layout.addWidget(self.phone_input)
+
         self.main_layout.addWidget(self.org_label)
         self.main_layout.addWidget(self.org_input)
+
         self.main_layout.addWidget(self.address_label)
         self.main_layout.addWidget(self.address_input)
+
         self.main_layout.addWidget(self.add_button)
         self.main_layout.addWidget(self.import_button)
 
@@ -82,9 +103,15 @@ class AddPartnersWindow(QDialog):
             # Add the partner to the database or perform other necessary actions
             insert_data = (f"{first_name} {last_name}", email, phone, org, address)
 
-            cur.execute("INSERT INTO partners (name, phone, email, org, address) VALUES (?, ?, ?, ?, ?);",
-                        insert_data)
-            con.commit()
+            # Check if there's a profile picture to insert
+            if self.profile_picture_data is not None:
+                cur.execute("INSERT INTO partners (name, phone, email, org, address, profile_picture)"
+                            " VALUES (?, ?, ?, ?, ?, ?);", (*insert_data, self.profile_picture_data))
+                con.commit()
+            else:
+                cur.execute("INSERT INTO partners (name, phone, email, org, address) VALUES (?, ?, ?, ?, ?);",
+                            insert_data)
+                con.commit()
 
             # Close the window
             self.accept()
@@ -122,6 +149,17 @@ class AddPartnersWindow(QDialog):
                                     "You do not have the proper column names (Name, Email, Phone, Organization,"
                                     " Mailing Address)")
 
+    def addProfilePicture(self):
+        file_path, _ = QFileDialog.getOpenFileName(self, "Select Profile Picture File", "",
+                                                   "Image Files (*.png, *.jpg, *.jpeg)")
+
+        if file_path:
+            try:
+                with open(file_path, "rb") as file:
+                    self.profile_picture_data = file.read()
+            except Exception as e:
+                print(e)
+
 
 class EditPartnersWindow(QDialog):
     def __init__(self, partner_id, main_window):
@@ -129,10 +167,11 @@ class EditPartnersWindow(QDialog):
 
         self.main_window = main_window
 
-        self.partner_info = cur.execute("SELECT * FROM partners WHERE id = ?", (str(partner_id),)).fetchone()
+        self.partner_info = cur.execute("SELECT * FROM partners WHERE id = ?", (partner_id,)).fetchone()
 
         # Set up the main layout for the Edit Partners window
         self.setWindowTitle("Edit Partners")
+        self.setWindowIcon(QIcon("resources/favicon.jpg"))
         self.setGeometry(800, 200, 400, 300)
         self.main_layout = QVBoxLayout()
 
@@ -153,23 +192,33 @@ class EditPartnersWindow(QDialog):
         self.org_input = QLineEdit()
         self.org_input.setText(self.partner_info[4])
 
-        self.org_label = QLabel("Mailing Address")
-        self.org_input = QLineEdit()
-        self.org_input.setText(self.partner_info[5])
+        self.address_label = QLabel("Mailing Address")
+        self.address_input = QLineEdit()
+        self.address_input.setText(self.partner_info[5])
+
+        self.profile_picture_data = None
+        self.profile_picture_label = QLabel("Add/Edit Profile Picture")
+        self.profile_picture_input = QPushButton("Browse")
+        self.profile_picture_input.clicked.connect(self.changeProfilePicture)
 
         # Create a button to save the changes
         self.add_button = QPushButton("Save Changes")
         self.add_button.clicked.connect(self.updatePartner)
+        self.add_button.setDefault(True)
 
         # Add widgets to the main layout
         self.main_layout.addWidget(self.name_label)
         self.main_layout.addWidget(self.name_input)
+        self.main_layout.addWidget(self.profile_picture_label)
+        self.main_layout.addWidget(self.profile_picture_input)
         self.main_layout.addWidget(self.email_label)
         self.main_layout.addWidget(self.email_input)
         self.main_layout.addWidget(self.phone_label)
         self.main_layout.addWidget(self.phone_input)
         self.main_layout.addWidget(self.org_label)
         self.main_layout.addWidget(self.org_input)
+        self.main_layout.addWidget(self.address_label)
+        self.main_layout.addWidget(self.address_input)
         self.main_layout.addWidget(self.add_button)
 
         # Set the main layout for the Add Partners window
@@ -182,11 +231,18 @@ class EditPartnersWindow(QDialog):
             email = self.email_input.text().strip()
             phone = self.phone_input.text().strip()
             org = self.org_input.text().strip()
+            address = self.address_input.text().strip()
 
             # Add the partner to the database or perform other necessary actions
-            cur.execute("UPDATE partners SET name=?, phone=?, email=?, org=? WHERE id = ?;",
-                        (name, email, phone, org, self.partner_info[0]))
-            con.commit()
+            if self.profile_picture_data is not None:
+                cur.execute("UPDATE partners SET name=?, phone=?, email=?, org=?, address=?, profile_picture=?"
+                            " WHERE id = ?;",
+                            (name, email, phone, org, address, self.profile_picture_data, self.partner_info[0]))
+                con.commit()
+            else:
+                cur.execute("UPDATE partners SET name=?, phone=?, email=?, org=?, address=? WHERE id = ?;",
+                            (name, email, phone, org, address, self.partner_info[0]))
+                con.commit()
 
             # Refresh the main window display
             self.main_window.loadPartners()
@@ -195,6 +251,17 @@ class EditPartnersWindow(QDialog):
             self.accept()
         except Exception as e:
             print(e)
+
+    def changeProfilePicture(self):
+        file_path, _ = QFileDialog.getOpenFileName(self, "Select Profile Picture File", "",
+                                                   "Image Files (*.png, *.jpg, *.jpeg)")
+
+        if file_path:
+            try:
+                with open(file_path, "rb") as file:
+                    self.profile_picture_data = file.read()
+            except Exception as e:
+                print(e)
 
 
 class EditPartnerNotesWindow(QDialog):
@@ -205,10 +272,11 @@ class EditPartnerNotesWindow(QDialog):
         self.name = partner_name
 
         # Retrieve the partner's notes from the database
-        self.notes = cur.execute("SELECT notes FROM partners WHERE id = ?", str(self.id)).fetchone()
+        self.notes = cur.execute("SELECT notes FROM partners WHERE id = ?", (self.id,)).fetchone()
 
         # Set up the window
         self.setWindowTitle(f"Edit {self.name}'s Notes")
+        self.setWindowIcon(QIcon("resources/favicon.jpg"))
         self.setGeometry(800, 200, 400, 300)
 
         self.main_layout = QVBoxLayout()
@@ -247,6 +315,7 @@ class FilterSearchWindow(QDialog):
 
         # Set up the window
         self.setWindowTitle("Filter Search Results")
+        self.setWindowIcon(QIcon("resources/favicon.jpg"))
         self.setGeometry(900, 300, 200, 100)
         self.main_layout = QVBoxLayout()
         self.main_window = main_window

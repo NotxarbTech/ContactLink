@@ -1,4 +1,5 @@
 from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget,
     QLabel, QVBoxLayout, QScrollArea,
@@ -21,6 +22,7 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__()
 
         self.setWindowTitle("Aggie CTE Partners (FBLA 2024) - by Braxton Hudgins")
+        self.setWindowIcon(QIcon("resources/favicon.jpg"))
         self.main_layout = QVBoxLayout()
         self.central_widget = QWidget()
 
