@@ -151,12 +151,16 @@ class AddPartnersWindow(QDialog):
 
     def addProfilePicture(self):
         file_path, _ = QFileDialog.getOpenFileName(self, "Select Profile Picture File", "",
-                                                   "Image Files (*.png, *.jpg, *.jpeg)")
+                                                   "All Files (*)")
 
         if file_path:
             try:
-                with open(file_path, "rb") as file:
-                    self.profile_picture_data = file.read()
+                if file_path.lower().endswith((".jpg", ".jpeg", ".png", ".webp")):
+                    with open(file_path, "rb") as file:
+                        self.profile_picture_data = file.read()
+                else:
+                    QMessageBox.warning(self, "Wrong or Unsupported File Type", "Supported file types are"
+                                                                                " jpg, jpeg, png, and webp")
             except Exception as e:
                 print(e)
 
@@ -254,12 +258,16 @@ class EditPartnersWindow(QDialog):
 
     def changeProfilePicture(self):
         file_path, _ = QFileDialog.getOpenFileName(self, "Select Profile Picture File", "",
-                                                   "Image Files (*.png, *.jpg, *.jpeg)")
+                                                   "All Files (*)")
 
         if file_path:
             try:
-                with open(file_path, "rb") as file:
-                    self.profile_picture_data = file.read()
+                if file_path.lower().endswith((".jpg", ".jpeg", ".png", ".webp")):
+                    with open(file_path, "rb") as file:
+                        self.profile_picture_data = file.read()
+                else:
+                    QMessageBox.warning(self, "Wrong or Unsupported File Type", "Supported file types are"
+                                                                                " jpg, jpeg, png, and webp")
             except Exception as e:
                 print(e)
 

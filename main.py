@@ -110,6 +110,9 @@ class MainWindow(QMainWindow):
 
     def searchContacts(self, text):
         visible_widgets = []
+
+        # Iterates through the widgets in the list and adds them to the
+        # visible widgets list to be rendered if they match the search criteria
         for widget in self.partner_list:
             if self.filter_name:
                 if widget.matchSearchText(widget.name, text):
@@ -138,7 +141,7 @@ class MainWindow(QMainWindow):
 app = QApplication([])
 window = MainWindow()
 
-# Change the app styling
+# Change the app styling to be responsive to the user's preferences
 app.setStyle("Fusion")
 
 # Run the application
