@@ -13,7 +13,7 @@ cur = con.cursor()
 
 
 class PartnerContactWidget(QFrame):
-    def __init__(self, name, email, phone, org, address, partner_id, main_window):
+    def __init__(self, name, email, phone, org, address, notes, partner_id, main_window):
         super(PartnerContactWidget, self).__init__()
 
         self.top_layout = QHBoxLayout()
@@ -25,6 +25,7 @@ class PartnerContactWidget(QFrame):
         self.org = org
         self.address = address
         self.id = partner_id
+        self.notes = notes
         self.main_window = main_window
 
         self.profile_picture_label = QLabel()
@@ -76,7 +77,10 @@ class PartnerContactWidget(QFrame):
 
     # Checks if text is in the person's name
     def matchSearchText(self, text, text_to_match):
-        return text.lower().find(text_to_match.lower()) != -1
+        if text is not None:
+            return text.lower().find(text_to_match.lower()) != -1
+        else:
+            return False
 
     def editPartner(self):
         dialog_window = EditPartnersWindow(self.id, self.main_window)

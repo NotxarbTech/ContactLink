@@ -34,6 +34,7 @@ class MainWindow(QMainWindow):
         # Filter variables
         self.filter_name = True
         self.filter_org = False
+        self.filter_notes = False
 
         # Header widget containing the application title
         self.title_widget = QLabel("Aggie CTE Partners")
@@ -88,7 +89,9 @@ class MainWindow(QMainWindow):
         cur.execute("SELECT * FROM partners;")
         for partner in cur:
             self.partner_list.append(PartnerContactWidget(partner[1], partner[2],
-                                                          partner[3], partner[4], partner[5], partner[0], self))
+                                                          partner[3], partner[4],
+                                                          partner[5], partner[6],
+                                                          partner[0], self))
 
         # Clear the partner layout
         for i in reversed(range(self.partner_layout.count())):
@@ -111,6 +114,12 @@ class MainWindow(QMainWindow):
     def searchContacts(self, text):
         visible_widgets = []
 
+        # If the search bar is empty, add them all back
+        if not text:
+            for widget in self.partner_list:
+                widget.setVisible(True)
+            return
+
         # Iterates through the widgets in the list and adds them to the
         # visible widgets list to be rendered if they match the search criteria
         for widget in self.partner_list:
@@ -126,6 +135,12 @@ class MainWindow(QMainWindow):
                     visible_widgets.append(widget)
                 else:
                     widget.setVisible(False)
+            elif self.filter_notes:
+                if widget.matchSearchText(widget.notes, text):
+                    widget.setVisible(True)
+                    visible_widgets.append(widget)
+                else:
+                    widget.setVisible(False)
 
         # Removes all visible widgets and reinserts them at the top
         for widget in reversed(visible_widgets):
@@ -133,7 +148,7 @@ class MainWindow(QMainWindow):
             self.partner_layout.insertWidget(0, widget)
 
     def filterSearch(self):
-        dialog_window = FilterSearchWindow(self.filter_name, self.filter_org, self)
+        dialog_window = FilterSearchWindow(self.filter_name, self.filter_org, self.filter_notes, self)
         dialog_window.exec()
 
 

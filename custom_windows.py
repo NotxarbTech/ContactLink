@@ -312,13 +312,16 @@ class EditPartnerNotesWindow(QDialog):
         cur.execute("UPDATE partners SET notes = ? WHERE id = ?", (self.text_box.toPlainText(), self.id))
         con.commit()
 
+        # Close the window
+        self.accept()
+
     def clearNotes(self):
         # Clears the text box
         self.text_box.setPlainText(None)
 
 
 class FilterSearchWindow(QDialog):
-    def __init__(self, filter_name, filter_org, main_window):
+    def __init__(self, filter_name, filter_org, filter_notes, main_window):
         super(FilterSearchWindow, self).__init__()
 
         # Set up the window
@@ -331,31 +334,43 @@ class FilterSearchWindow(QDialog):
         # Checkboxes for different filter options
         self.name_checkbox = QCheckBox("Name")
         self.org_checkbox = QCheckBox("Organization")
+        self.notes_checkbox = QCheckBox("Notes")
 
         if filter_name:
             self.name_checkbox.setChecked(True)
         elif filter_org:
             self.org_checkbox.setChecked(True)
+        elif filter_notes:
+            self.notes_checkbox.setChecked(True)
 
         # Button group to contain the checkboxes
         self.filter_button_group = QButtonGroup()
         self.filter_button_group.addButton(self.name_checkbox)
         self.filter_button_group.addButton(self.org_checkbox)
+        self.filter_button_group.addButton(self.notes_checkbox)
         self.filter_button_group.setExclusive(True)
 
         # Detect change and update variables in the main window
-        self.name_checkbox.stateChanged.connect(lambda: self.filterStateChanged(True, False))
-        self.org_checkbox.stateChanged.connect(lambda: self.filterStateChanged(False, True))
+        self.name_checkbox.stateChanged.connect(lambda: self.filterStateChanged(True, False, False))
+        self.org_checkbox.stateChanged.connect(lambda: self.filterStateChanged(False, True, False))
+        self.notes_checkbox.stateChanged.connect(lambda: self.filterStateChanged(False, False, True))
 
         self.main_layout.addWidget(self.name_checkbox)
         self.main_layout.addWidget(self.org_checkbox)
+        self.main_layout.addWidget(self.notes_checkbox)
 
         self.setLayout(self.main_layout)
 
-    def filterStateChanged(self, filter_name, filter_org):
+    def filterStateChanged(self, filter_name, filter_org, filter_notes):
         if filter_name:
             self.main_window.filter_name = True
             self.main_window.filter_org = False
+            self.main_window.filter_notes = False
         if filter_org:
             self.main_window.filter_name = False
             self.main_window.filter_org = True
+            self.main_window.filter_notes = False
+        if filter_notes:
+            self.main_window.filter_name = False
+            self.main_window.filter_org = False
+            self.main_window.filter_notes = True
