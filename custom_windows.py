@@ -1,3 +1,4 @@
+from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import (QDialog, QLabel, QLineEdit,
                              QVBoxLayout, QPushButton, QFileDialog,
@@ -374,3 +375,55 @@ class FilterSearchWindow(QDialog):
             self.main_window.filter_name = False
             self.main_window.filter_org = False
             self.main_window.filter_notes = True
+
+
+class HelpWindow(QDialog):
+    def __init__(self):
+        super(HelpWindow, self).__init__()
+
+        # Window setup
+        self.setWindowTitle("Help and FAQ")
+        self.setGeometry(900, 300, 600, 600)
+        self.main_layout = QVBoxLayout()
+
+        # Title at the top of the page, centered horizontally
+        self.title_widget = QLabel("Help and FAQ")
+        title_widget_font = self.title_widget.font()
+        title_widget_font.setPointSize(26)
+        self.title_widget.setFont(title_widget_font)
+        self.title_widget.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+
+        # Frequently Asked Questions/Help Section
+        section_title_font = self.title_widget.font()
+        section_title_font.setPointSize(20)
+
+        section_content_font = self.title_widget.font()
+        section_content_font.setPointSize(14)
+
+        self.section1_title = QLabel("Insert FAQ Here")
+        self.section1_title.setFont(section_title_font)
+
+        self.section1_content = QLabel("Insert FAQ Answer Here")
+        self.section1_content.setFont(section_content_font)
+
+        self.section2_title = QLabel("Insert FAQ Here")
+        self.section2_title.setFont(section_title_font)
+
+        self.section2_content = QLabel("Insert FAQ Answer Here")
+        self.section2_content.setFont(section_content_font)
+
+        self.section3_title = QLabel("Insert FAQ Here")
+        self.section3_title.setFont(section_title_font)
+
+        self.section3_content = QLabel("Insert FAQ Answer Here")
+        self.section3_content.setFont(section_content_font)
+
+        self.main_layout.addWidget(self.title_widget)
+        self.main_layout.addWidget(self.section1_title)
+        self.main_layout.addWidget(self.section1_content)
+        self.main_layout.addWidget(self.section2_title)
+        self.main_layout.addWidget(self.section2_content)
+        self.main_layout.addWidget(self.section3_title)
+        self.main_layout.addWidget(self.section3_content)
+
+        self.setLayout(self.main_layout)

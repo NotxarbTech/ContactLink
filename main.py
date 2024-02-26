@@ -10,7 +10,7 @@ from PyQt6.QtWidgets import (
 import sqlite3
 
 from custom_widgets import PartnerContactWidget
-from custom_windows import AddPartnersWindow, FilterSearchWindow
+from custom_windows import AddPartnersWindow, FilterSearchWindow, HelpWindow
 
 # Connection and cursor to access and modify and read from the database
 con = sqlite3.connect("database.db")
@@ -73,9 +73,18 @@ class MainWindow(QMainWindow):
         self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.scroll_area.setWidgetResizable(True)
 
+        # Bottom bar with help and credits
+        self.bottom_info_bar = QHBoxLayout()
+        self.credit_widget = QLabel("By Braxton Hudgins for FBLA 2024")
+        self.help_button = QPushButton("Help/FAQ")
+        self.help_button.clicked.connect(self.openHelpWindow)
+        self.bottom_info_bar.addWidget(self.credit_widget)
+        self.bottom_info_bar.addWidget(self.help_button)
+
         self.main_layout.addWidget(self.title_widget)
         self.main_layout.addLayout(self.tool_bar_layout)
         self.main_layout.addWidget(self.scroll_area)
+        self.main_layout.addLayout(self.bottom_info_bar)
 
         self.setGeometry(600, 100, 800, 600)
         self.central_widget.setLayout(self.main_layout)
@@ -149,6 +158,10 @@ class MainWindow(QMainWindow):
 
     def filterSearch(self):
         dialog_window = FilterSearchWindow(self.filter_name, self.filter_org, self.filter_notes, self)
+        dialog_window.exec()
+
+    def openHelpWindow(self):
+        dialog_window = HelpWindow()
         dialog_window.exec()
 
 
