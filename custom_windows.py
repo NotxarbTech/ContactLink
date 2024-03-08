@@ -383,7 +383,8 @@ class HelpWindow(QDialog):
 
         # Window setup
         self.setWindowTitle("Help and FAQ")
-        self.setGeometry(900, 300, 600, 600)
+        self.setGeometry(750, 300, 600, 600)
+        self.setWindowIcon(QIcon("resources/favicon.jpg"))
         self.main_layout = QVBoxLayout()
 
         # Title at the top of the page, centered horizontally
@@ -400,23 +401,34 @@ class HelpWindow(QDialog):
         section_content_font = self.title_widget.font()
         section_content_font.setPointSize(14)
 
-        self.section1_title = QLabel("Insert FAQ Here")
+        self.section1_title = QLabel("How do I add a new partner?")
         self.section1_title.setFont(section_title_font)
 
-        self.section1_content = QLabel("Insert FAQ Answer Here")
+        self.section1_content = QLabel(
+            'To add a new partner, click on the "Add New Partners" button on the main screen.'
+            " This will open a window where you can enter the partner's information such as"
+            " name, email, phone, organization, and address. You can also add a profile picture if desired.")
         self.section1_content.setFont(section_content_font)
+        self.section1_content.setWordWrap(True)
 
-        self.section2_title = QLabel("Insert FAQ Here")
+        self.section2_title = QLabel("Can I import contacts from a spreadsheet?")
         self.section2_title.setFont(section_title_font)
 
-        self.section2_content = QLabel("Insert FAQ Answer Here")
+        self.section2_content = QLabel(
+            'Yes, you can import partner data from a CSV (spreadsheet) file. Click on the "Import from Spreadsheet"'
+            ' button on the add partners window. Make sure your spreadsheet has the correct column names'
+            ' (Name, Email, Phone, Organization, Address), then select the file to import.')
         self.section2_content.setFont(section_content_font)
+        self.section2_content.setWordWrap(True)
 
-        self.section3_title = QLabel("Insert FAQ Here")
+        self.section3_title = QLabel("What file types are supported for profile pictures?")
         self.section3_title.setFont(section_title_font)
 
-        self.section3_content = QLabel("Insert FAQ Answer Here")
+        self.section3_content = QLabel(
+            "Profile pictures can be in JPG, JPEG, PNG, or WEBP formats. When adding or editing a partner, you can"
+            " browse your computer to select a profile picture file of one of these types.")
         self.section3_content.setFont(section_content_font)
+        self.section3_content.setWordWrap(True)
 
         self.main_layout.addWidget(self.title_widget)
         self.main_layout.addWidget(self.section1_title)
