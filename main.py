@@ -123,6 +123,9 @@ class MainWindow(QMainWindow):
     def searchContacts(self, text):
         visible_widgets = []
 
+        # Refresh the partner list
+        self.loadPartners()
+
         # If the search bar is empty, add them all back
         if not text:
             for widget in self.partner_list:

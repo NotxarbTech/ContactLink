@@ -430,6 +430,11 @@ class HelpWindow(QDialog):
         self.section3_content.setFont(section_content_font)
         self.section3_content.setWordWrap(True)
 
+        self.extra_questions_link = QLabel(
+            '<a href="https://forms.gle/moZka7BF5fnN2qJe9">Have additional questions or feedback? Click here!</a>')
+        self.extra_questions_link.setOpenExternalLinks(True)
+        self.extra_questions_link.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+
         self.main_layout.addWidget(self.title_widget)
         self.main_layout.addWidget(self.section1_title)
         self.main_layout.addWidget(self.section1_content)
@@ -437,5 +442,6 @@ class HelpWindow(QDialog):
         self.main_layout.addWidget(self.section2_content)
         self.main_layout.addWidget(self.section3_title)
         self.main_layout.addWidget(self.section3_content)
+        self.main_layout.addWidget(self.extra_questions_link)
 
         self.setLayout(self.main_layout)
