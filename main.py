@@ -95,7 +95,7 @@ class MainWindow(QMainWindow):
         self.partner_list = []
 
         # Fetch the partners from the database and loop through, creating a Partner Contact Widget for each row
-        cur.execute("SELECT * FROM partners;")
+        cur.execute("SELECT * FROM partners ORDER BY name DESC;")
         for partner in cur:
             self.partner_list.append(PartnerContactWidget(partner[1], partner[2],
                                                           partner[3], partner[4],
@@ -154,10 +154,10 @@ class MainWindow(QMainWindow):
                 else:
                     widget.setVisible(False)
 
-        # Removes all visible widgets and reinserts them at the top
+        # Removes all visible widgets and reinserts them at the bottom (solves a visual glitch)
         for widget in reversed(visible_widgets):
             self.partner_layout.removeWidget(widget)
-            self.partner_layout.insertWidget(0, widget)
+            self.partner_layout.insertWidget(len(visible_widgets), widget)
 
     def filterSearch(self):
         dialog_window = FilterSearchWindow(self.filter_name, self.filter_org, self.filter_notes, self)
