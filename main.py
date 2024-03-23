@@ -4,10 +4,11 @@ from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget,
     QLabel, QVBoxLayout, QScrollArea,
     QLineEdit, QSpacerItem, QSizePolicy,
-    QHBoxLayout, QPushButton
+    QHBoxLayout, QPushButton, QFileDialog
 )
 
 import sqlite3
+import pandas as pd
 
 from custom_widgets import PartnerContactWidget
 from custom_windows import AddPartnersWindow, FilterSearchWindow, HelpWindow
@@ -73,12 +74,15 @@ class MainWindow(QMainWindow):
         self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.scroll_area.setWidgetResizable(True)
 
-        # Bottom bar with help and credits
+        # Bottom bar with export, help, and credits
         self.bottom_info_bar = QHBoxLayout()
         self.credit_widget = QLabel("By Braxton Hudgins for FBLA 2024")
         self.help_button = QPushButton("Help/FAQ")
+        self.export_button = QPushButton("Export Contacts")
         self.help_button.clicked.connect(self.openHelpWindow)
+        self.export_button.clicked.connect(self.exportToCSV)
         self.bottom_info_bar.addWidget(self.credit_widget)
+        self.bottom_info_bar.addWidget(self.export_button)
         self.bottom_info_bar.addWidget(self.help_button)
 
         self.main_layout.addWidget(self.title_widget)
@@ -166,6 +170,22 @@ class MainWindow(QMainWindow):
     def openHelpWindow(self):
         dialog_window = HelpWindow()
         dialog_window.exec()
+
+    def exportToCSV(self):
+        # Open a file dialog to choose the save location and file name
+        file_path, _ = QFileDialog.getSaveFileName(self, "Save CSV", "", "CSV Files (*.csv)")
+
+        if file_path:
+            try:
+                # Get the data from the database
+                data = (cur.execute("SELECT name, org, email, phone, notes FROM partners ORDER BY name DESC;")
+                        .fetchall())
+                df = pd.DataFrame(data, columns=['Name', 'Organization', 'Email', 'Phone', 'Notes'])
+
+                # Save the DataFrame to a CSV file
+                df.to_csv(file_path, index=False)
+            except Exception as e:
+                print(e)
 
 
 # Create application and main window
